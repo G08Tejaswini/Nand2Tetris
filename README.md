@@ -27,8 +27,8 @@ The end result? A working computer that can run Tetris — all built from scratc
 | 04 | Machine Language | Mult.asm, Fill.asm in Hack Assembly | ✅ |
 | 05 | Computer Architecture | CPU, Memory, Computer chips | ✅ |
 | 06 | Assembler | Hack Assembler written in Python | ✅ |
-| 07 | VM Translator (Part I) | Stack arithmetic translator | 🚧 |
-| 08 | VM Translator (Part II) | Program flow & function calls	 | ⬜ |
+| 07 | VM Translator (Part I) | Stack arithmetic translator | ✅ |
+| 08 | VM Translator (Part II) | Program flow & function calls	 | 🚧 |
 | 09|  High-Level Language | Write a game in Jack (Tetris!) | ⬜ |
 | 10 | Compiler I | Jack compiler — syntax analysis | ⬜ |
 | 11 | Compiler II | Jack compiler — code generation | ⬜ |
