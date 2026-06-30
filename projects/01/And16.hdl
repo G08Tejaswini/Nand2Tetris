@@ -1,12 +1,4 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/1/And16.hdl
-/**
- * 16-bit And gate:
- * for i = 0, ..., 15:
- * out[i] = a[i] And b[i] 
- */
+
 CHIP And16 {
     IN a[16], b[16];
     OUT out[16];
@@ -28,4 +20,5 @@ CHIP And16 {
     And(a= a[13], b=b[13] , out=out[13] );
     And(a= a[14], b=b[14] , out=out[14] );
     And(a= a[15], b=b[15] , out=out[15] );
+    //This is And operation for 16 bit number 
 }
