@@ -10,6 +10,8 @@ CHIP DMux4Way {
     IN in, sel[2];
     OUT a, b, c, d;
 
+    //DMux4Way takes one input and a selector and gives 4 outputs 
+
     PARTS:
     DMux(in= in, sel=sel[1] , a=path1 , b=path2 ); //selecting between path1(a,b) and path2 (c,d)
 
