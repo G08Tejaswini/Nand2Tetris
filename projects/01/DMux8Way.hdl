@@ -20,8 +20,8 @@ CHIP DMux8Way {
     DMux(in=in , sel=sel[2] , a=path1 , b=path2 ); //splitting input into 2 paths, path1 (a,b,c,d) and path2 (e,f,g,h)
 
 
-    DMux(in=path1 , sel=sel[1] , a=ab, b=cd ); //Splittiing path1 into two different paths again 1 is (a,b) and other is (c,d)
-    DMux(in=path2 , sel=sel[1] , a=ef, b=gh);  //Splittiing path1 into two different paths again 1 is (e,f) and other is (g,h)
+    DMux(in=path1 , sel=sel[1] , a=ab, b=cd ); //Splitting path1 into two different paths again 1 is (a,b) and other is (c,d)
+    DMux(in=path2 , sel=sel[1] , a=ef, b=gh);  //Splitting path1 into two different paths again 1 is (e,f) and other is (g,h)
 
     DMux(in=ab , sel=sel[0] , a=a, b=b ); //Splitting the ab path into a and b
     DMux(in=cd , sel=sel[0] , a=c, b=d ); //Splitting the cd path into c and d 
