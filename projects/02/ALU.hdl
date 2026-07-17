@@ -1,7 +1,3 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/2/ALU.hdl
 /**
  * ALU (Arithmetic Logic Unit):
  * Computes out = one of the following functions:
@@ -18,13 +14,13 @@
  */
 // Implementation: Manipulates the x and y inputs
 // and operates on the resulting values, as follows:
-// if (zx == 1) sets x = 0        // 16-bit constant
-// if (nx == 1) sets x = !x       // bitwise not
-// if (zy == 1) sets y = 0        // 16-bit constant
-// if (ny == 1) sets y = !y       // bitwise not
-// if (f == 1)  sets out = x + y  // integer 2's complement addition
-// if (f == 0)  sets out = x & y  // bitwise and
-// if (no == 1) sets out = !out   // bitwise not
+// if (zx == 1) sets x = 0        16-bit constant
+// if (nx == 1) sets x = !x       bitwise not
+// if (zy == 1) sets y = 0        16-bit constant
+// if (ny == 1) sets y = !y       bitwise not
+// if (f == 1)  sets out = x + y  integer 2's complement addition
+// if (f == 0)  sets out = x & y  bitwise and
+// if (no == 1) sets out = !out   bitwise not
 
 CHIP ALU {
     IN  
@@ -41,36 +37,40 @@ CHIP ALU {
         ng;      // if (out < 0)  equals 1, else 0
 
     PARTS:
-    Mux16(a=x , b=false , sel=zx , out=pathx1 );
-    Not16(in= x, out=notx );
-    Mux16(a= pathx1, b= notx, sel=nx, out=pathx2 );
+    // ---------- X input conditioning ----------
+    // If zx=1, force x to 0; otherwise keep x
+    Mux16(a=x, b=false, sel=zx, out=pathx1);
 
-    Mux16(a=y , b=false , sel=zy , out=pathy1 );
-    Not16(in= y, out=noty );
-    Mux16(a= pathy1, b= noty, sel=ny, out=pathy2 );
+    // If nx=1, bitwise-negate the (possibly zeroed) x
+    Not16(in=x, out=notx);
+    Mux16(a=pathx1, b=notx, sel=nx, out=pathx2);
 
-    Add16(a= pathx2, b=pathy2 , out=add );
-    And16(a= pathx2, b=pathy2 , out=and );
-    Mux16(a=add , b=and , sel=f , out=out1 );
+    // ---------- Y input conditioning ----------
+    // If zy=1, force y to 0; otherwise keep y
+    Mux16(a=y, b=false, sel=zy, out=pathy1);
 
-    Not16(in= out1, out=notout);
-    Mux16(a=out1 , b=notout, sel=no , out=finalout);
+    // If ny=1, bitwise-negate the (possibly zeroed) y
+    Not16(in=y, out=noty);
+    Mux16(a=pathy1, b=noty, sel=ny, out=pathy2);
 
+    // ---------- Core operation ----------
+    // Perform both addition and bitwise AND;
+    // the f control bit picks which one becomes out1
+    Add16(a=pathx2, b=pathy2, out=add);
+    And16(a=pathx2, b=pathy2, out=and);
+    Mux16(a=add, b=and, sel=f, out=out1);
+
+    // ---------- Output conditioning ----------
+    // If no=1, negate the result; otherwise keep it
+    Not16(in=out1, out=notout);
+    Mux16(a=out1, b=notout, sel=no, out=finalout);
+
+    // ---------- Status flags ----------
+    // These helper chips detect if the final result is negative or zero.
+    // They were built in Project 2 to work around HDL indexing limits.
     IsNeg(in=finalout, out=ng);
     IsZero(in=finalout, out=zr);
 
+    // Route the final computed value to the chip's output
     And16(a=finalout, b=finalout, out=out);
-    
-
-
-
-
-
-
-
-
-
-
-
-
 }
