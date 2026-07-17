@@ -1,7 +1,3 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/5/Memory.hdl
 /**
  * The complete address space of the Hack computer's memory,
  * including RAM and memory-mapped I/O. 
@@ -25,14 +21,26 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
+    // Address map: address[14] = 0 → RAM (0–16383), 1 → I/O (Screen/Keyboard)
+    // First DMux routes the load signal to RAM or to the I/O region
     DMux(in=load, sel=address[14], a=loadRAM, b=loadIO);
+
+    // Second DMux splits I/O: address[13] = 0 → Screen, 1 → Keyboard
+    // (Keyboard is read‑only, so its load output is unused)
     DMux(in=loadIO, sel=address[13], a=loadScreen, b=unused);
-    RAM16K(in=in , load=loadRAM , address=address[0..13] , out=RAMout );
-    Screen(in=in , load=loadScreen , address=address[0..12] , out=ScreenOut );
+
+    // RAM16K: lower 14 bits of address (0–16383)
+    RAM16K(in=in, load=loadRAM, address=address[0..13], out=RAMout);
+
+    // Screen: memory‑mapped from 16384 to 24575 (lower 13 bits)
+    Screen(in=in, load=loadScreen, address=address[0..12], out=ScreenOut);
+
+    // Keyboard: memory‑mapped at address 24576 (no load or address input)
     Keyboard(out=KeyOut);
-	Mux16(a=RAMout, b=IOout, sel=address[14], out=out);
+
+    // Read multiplexing: first select between RAM and I/O based on address[14]
+    Mux16(a=RAMout, b=IOout, sel=address[14], out=out);
+
+    // Second mux: within I/O, select Screen or Keyboard based on address[13]
     Mux16(a=ScreenOut, b=KeyOut, sel=address[13], out=IOout);
-
-
-
 }
