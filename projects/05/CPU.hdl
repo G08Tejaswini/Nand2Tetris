@@ -1,7 +1,3 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/5/CPU.hdl
 /**
  * The Hack Central Processing unit (CPU).
  * Parses the binary code in the instruction input and executes it according to the
@@ -33,41 +29,60 @@ CHIP CPU {
 
     PARTS:
     
-    
+    // ------- Control Signal Decoding -------
+    // loadD = C-instruction AND destination bit for D (bit 4)
     And(a=instruction[15], b=instruction[4], out=loadD);
+    // writeM = C-instruction AND destination bit for M (bit 3)
     And(a=instruction[15], b=instruction[3], out=writeM);
+    // loadA: A-instruction always loads; C-instruction loads if bit 5 is set
     Mux(a=true, b=instruction[5], sel=instruction[15], out=loadA);
 
-    //JUMP LOGIC//
-    Not(in=ng , out=Notng );
-    Not(in=zr , out=Notzr );
-    And(a=Notng , b=Notzr , out=pos );
+    // ------- Jump Logic -------
+    // Determine if ALU output is positive (ng=0 and zr=0)
+    Not(in=ng, out=Notng);
+    Not(in=zr, out=Notzr);
+    And(a=Notng, b=Notzr, out=pos);
 
-    //JUMP Conditions//
-    And(a=instruction[2] , b=ng , out=J2 );
-    And(a=instruction[1] , b=zr , out=J1 );
-    And(a=instruction[0] , b=pos , out=J0 );
+    // Combine jump condition bits with ALU status flags
+    And(a=instruction[2], b=ng, out=J2);   // J2: negative?
+    And(a=instruction[1], b=zr, out=J1);   // J1: zero?
+    And(a=instruction[0], b=pos, out=J0);  // J0: positive?
 
-    Or(a=J2 , b=J1 , out=or1 );
-    Or(a=or1 , b=J0 , out=jump );
-    And(a=instruction[15] , b=jump , out=load );
-    Not(in=load , out=inc );
+    // Final jump decision: at least one condition met
+    Or(a=J2, b=J1, out=or1);
+    Or(a=or1, b=J0, out=jump);
+    // Actual PC load only on C-instructions with a jump condition true
+    And(a=instruction[15], b=jump, out=load);
+    // PC increments when not jumping
+    Not(in=load, out=inc);
 
-    Mux16(a=Aout ,b=inM ,sel=instruction[12] ,out=ALUy );
-    ALU(x=Dout , y=ALUy , zx=instruction[11] , nx=instruction[10] , zy=instruction[9] , ny=instruction[8] , f=instruction[7] , no=instruction[6] , out=ALUout , zr=zr , ng=ng ); //y can be either A or inM(from memory)
-    Mux16(a=instruction , b=ALUout , sel=instruction[15] , out=Ain );
+    // ------- Datapath -------
+    // ALU y input: choose between A register output and inM (memory data)
+    // Controlled by instruction bit 12 (a-bit)
+    Mux16(a=Aout, b=inM, sel=instruction[12], out=ALUy);
 
-    ARegister(in=Ain , load=loadA , out=Aout ); //depending on loadA it chooses A-instruction or C- instruction
-    DRegister(in=ALUout , load=loadD , out=Dout );//only operates after C-instruction depending on bit 14
+    // ALU: control bits directly from instruction (bits 11..6)
+    // x is always D register output; y is selected above
+    ALU(x=Dout, y=ALUy,
+        zx=instruction[11], nx=instruction[10],
+        zy=instruction[9],  ny=instruction[8],
+        f=instruction[7],   no=instruction[6],
+        out=ALUout, zr=zr, ng=ng);
 
-    
+    // A register input: instruction (A-instruction) or ALU output (C-instruction)
+    Mux16(a=instruction, b=ALUout, sel=instruction[15], out=Ain);
 
-    
-    
-   
-    PC(in=Aout , load=load , inc=inc , reset=reset ,  out[0..14] = pc );
+    // A and D registers (clocked)
+    ARegister(in=Ain, load=loadA, out=Aout);
+    DRegister(in=ALUout, load=loadD, out=Dout);
+
+    // ------- Outputs -------
+    // Program Counter: next address, jump address, or reset
+    PC(in=Aout, load=load, inc=inc, reset=reset, out[0..14]=pc);
+
+    // Address to data memory is always the current A register value
     And16(a=Aout, b=Aout, out[0..14]=addressM);
-    And16(a=ALUout, b=ALUout, out=outM);
 
-	
+    // Data to write to memory is always the ALU output
+    And16(a=ALUout, b=ALUout, out=outM);
 }
